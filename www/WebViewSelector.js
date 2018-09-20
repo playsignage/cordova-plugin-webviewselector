@@ -12,9 +12,6 @@ WebViewSelector.currentEngine = null;
 WebViewSelector.availableEngines = null;
 
 WebViewSelector.setEngine = function(engineId, cb) {
-	if (WebViewSelector.WebViewType[engineId] === undefined) {
-		return cb('unknown webview type: ' + engineId);
-	}
 	exec(
 		function success() {
 			WebViewSelector.currentEngine = engineId;
