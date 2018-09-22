@@ -8,9 +8,12 @@ package org.apache.cordova;
 import org.apache.cordova.PluginResult.Status;
 import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
+import android.content.SharedPreferences;
 import android.content.Context;
 import android.os.Build;
+import android.app.Activity;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileInputStream;
@@ -118,36 +121,54 @@ public class WebViewSelector extends CordovaPlugin {
 	}
 
 	private static WebViewType determineWebViewEngine(Context context) {
-		if (!isCrosswalkInstalled()) {
-			return WebViewType.SYSTEM;
-		}
+        if (!isCrosswalkInstalled()) {
+            return WebViewType.SYSTEM;
+        }
 
-		String customValue;
+        //Reading engine set in PlaySignage app preferences
+        SharedPreferences sharedPref = context.getSharedPreferences("NativeStorage", Activity.MODE_PRIVATE);
+        String settingsString = sharedPref.getString("settings", "null");
+        try {
+            JSONObject settings = new JSONObject(settingsString);
+            String engine = settings.getString("WEBVIEW_ENGINE");
+            if ("crosswalk".equals(engine)) {
+                LOG.e(TAG, "Setting crosswalk webview engine");
+                return WebViewType.CROSSWALK;
+            } else if ("system".equals(engine)) {
+                LOG.e(TAG, "Setting system webview engine");
+                return WebViewType.SYSTEM;
+            }
+        } catch (JSONException e) {
+            LOG.e(TAG, "Unable to parse WEBVIEW_ENGINE from settings:");
+            LOG.e(TAG, e.getMessage());
+        }
 
-		// Checking if we have a custom value set from outside the app
-		String filePath = getUserConfigFilePath(context);
-		if (!filePath.equals("")) {
-			customValue = readValueFromFile(filePath);
-			if (customValue.equals(Integer.toString(WebViewType.SYSTEM.ordinal()))) {
-				return WebViewType.SYSTEM;
-			} else if (customValue.equals(Integer.toString(WebViewType.CROSSWALK.ordinal()))) {
-				return WebViewType.CROSSWALK;
-			}
-		}
+        //Sander: previous code that reads config from file
+        //String customValue;
+        //// Checking if we have a custom value set from outside the app
+        //String filePath = getUserConfigFilePath(context);
+        //if (!filePath.equals("")) {
+        //	customValue = readValueFromFile(filePath);
+        //	if (customValue.equals(Integer.toString(WebViewType.SYSTEM.ordinal()))) {
+        //		return WebViewType.SYSTEM;
+        //	} else if (customValue.equals(Integer.toString(WebViewType.CROSSWALK.ordinal()))) {
+        //		return WebViewType.CROSSWALK;
+        //	}
+        //}
 
-		// Checking if we have a custom value set from inside the app
-		customValue = readValueFromFile(getInAppConfigFilePath(context));
-		if (customValue.equals(Integer.toString(WebViewType.SYSTEM.ordinal()))) {
-			return WebViewType.SYSTEM;
-		} else if (customValue.equals(Integer.toString(WebViewType.CROSSWALK.ordinal()))) {
-			return WebViewType.CROSSWALK;
-		}
+        //// Checking if we have a custom value set from inside the app
+        //customValue = readValueFromFile(getInAppConfigFilePath(context));
+        //if (customValue.equals(Integer.toString(WebViewType.SYSTEM.ordinal()))) {
+        //	return WebViewType.SYSTEM;
+        //} else if (customValue.equals(Integer.toString(WebViewType.CROSSWALK.ordinal()))) {
+        //	return WebViewType.CROSSWALK;
+        //}
 
-		if (Build.VERSION.SDK_INT > crosswalkMaxSdkVersion) {
-			return WebViewType.SYSTEM;
-		} else {
-			return WebViewType.CROSSWALK;
-		}
+        if (Build.VERSION.SDK_INT > crosswalkMaxSdkVersion) {
+            return WebViewType.SYSTEM;
+        } else {
+            return WebViewType.CROSSWALK;
+        }
 	}
 
 	public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
