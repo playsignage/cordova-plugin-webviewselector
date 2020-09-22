@@ -4,9 +4,9 @@ module.exports = function(ctx) {
 
 	console.log('Android webViewSelector hook installation');
 
-	var fs = require('fs');
-	var path = require('path');
-	var deferral = require('q').defer();
+	var fs = ctx.requireCordovaModule('fs');
+	var path = ctx.requireCordovaModule('path');
+	var deferral = ctx.requireCordovaModule('q').defer();
 
 	var fileToPatch = 'platforms/android/CordovaLib/src/org/apache/cordova/CordovaWebViewImpl.java';
 	var patch = '        WebViewSelector.updateWebViewPreference(context, preferences);\n';
