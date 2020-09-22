@@ -4,9 +4,9 @@ module.exports = function(ctx) {
   // make sure android platform is part of build
   if (ctx.opts.platforms.indexOf('android') < 0) { return; }
 
-  var fs = ctx.requireCordovaModule('fs');
-  var path = ctx.requireCordovaModule('path');
-  var deferral = ctx.requireCordovaModule('q').defer();
+  var fs = require('fs');
+  var path = require('path');
+  var deferral = require('q').defer();
 
   //since cordova libs folder moved, we must copy the file with node script rather than use the <source-file> tag in plugin.xml 
   fs.createReadStream('plugins/cordova-plugin-webviewselector/src/android/WebViewSelector.java')
