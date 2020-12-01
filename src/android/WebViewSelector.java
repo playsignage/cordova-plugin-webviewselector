@@ -128,6 +128,11 @@ public class WebViewSelector extends CordovaPlugin {
         //Reading engine set in PlaySignage app preferences
         SharedPreferences sharedPref = context.getSharedPreferences("NativeStorage", Activity.MODE_PRIVATE);
         String settingsString = sharedPref.getString("settings", "null");
+
+        if (Build.VERSION.SDK_INT > crosswalkMaxSdkVersion) {
+            LOG.e(TAG, "Setting system webview engine as current SDK version " + Build.VERSION.SDK_INT + " is higher than max SDK version " + crosswalkMaxSdkVersion);
+            return WebViewType.SYSTEM;
+        }
         try {
             JSONObject settings = new JSONObject(settingsString);
             String engine = settings.getString("WEBVIEW_ENGINE");
